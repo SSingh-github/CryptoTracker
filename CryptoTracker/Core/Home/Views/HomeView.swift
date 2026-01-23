@@ -22,8 +22,12 @@ struct HomeView: View {
                 columnTitles
                 
                 if !showPortfolio {
-                    allCoinsList
-                        .transition(.move(edge: .leading))
+                    if vm.isLoading {
+                        allCoinsShimmerList
+                    } else {
+                        allCoinsList
+                            .transition(.move(edge: .leading))
+                    }
                 }
                 
                 if showPortfolio {
@@ -78,6 +82,17 @@ extension HomeView {
             }
         }
         .listStyle(PlainListStyle())
+    }
+    
+    private var allCoinsShimmerList: some View {
+        List {
+            ForEach(0..<15, id: \.self) { _ in
+                CoinRowShimmerView()
+                    .listRowInsets(.init(top: 10, leading: 10, bottom: 10, trailing: 10))
+            }
+        }
+        .listStyle(PlainListStyle())
+        .scrollDisabled(true)
     }
     
     private var portfolioCoinsList: some View {

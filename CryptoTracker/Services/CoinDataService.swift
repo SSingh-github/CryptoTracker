@@ -20,7 +20,7 @@ class CoinDataService {
         
         var request = URLRequest(url: url)
         request.httpMethod = "GET"
-        request.setValue("", forHTTPHeaderField: "x-cg-demo-api-key")
+        request.setValue("CG-WiP6AhGWjRHDVmh1PoCwScRT", forHTTPHeaderField: "x-cg-demo-api-key")
         
         coinSubscription = URLSession.shared.dataTaskPublisher(for: request)
             .subscribe(on: DispatchQueue.global(qos: .default))

@@ -13,12 +13,14 @@ class HomeViewModel: ObservableObject {
     
     @Published var allCoins: [CoinModel] = []
     @Published var portfolioCoins: [CoinModel] = []
+    @Published var isLoading: Bool = false
     
     private let dataService = CoinDataService()
     private var cancellables = Set<AnyCancellable>()
     
     init() {
         addSubscribers()
+        isLoading = true
         dataService.getCoins()
     }
     
@@ -26,6 +28,7 @@ class HomeViewModel: ObservableObject {
         dataService.$allCoins
             .sink {[weak self] (returnedCoins) in
                 self?.allCoins = returnedCoins
+                self?.isLoading = false
             }
             .store(in: &cancellables)
     }
