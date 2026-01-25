@@ -11,7 +11,7 @@ struct CoinRowShimmerView: View {
     var body: some View {
         HStack(spacing: 16) {
             Circle()
-                .fill(Color.gray.opacity(0.3))
+                .fill(Color.theme.shimmerBackground)
                 .frame(width: 32, height: 32)
 
             VStack(alignment: .leading, spacing: 6) {
