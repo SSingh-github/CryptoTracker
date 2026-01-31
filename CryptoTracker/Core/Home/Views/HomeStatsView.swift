@@ -15,9 +15,16 @@ struct HomeStatsView: View {
     var body: some View {
         GeometryReader { geometry in
             HStack {
-                ForEach(vm.statistics) { stat in
-                    StatisticView(stat: stat)
-                        .frame(width: geometry.size.width / 3)
+                if vm.isMarketDataLoading {
+                    ForEach(0..<3, id: \.self) { _ in
+                        StatisticShimmerView()
+                            .frame(width: geometry.size.width / 3)
+                    }
+                } else {
+                    ForEach(vm.statistics) { stat in
+                        StatisticView(stat: stat)
+                            .frame(width: geometry.size.width / 3)
+                    }
                 }
             }
             .frame(width: geometry.size.width,

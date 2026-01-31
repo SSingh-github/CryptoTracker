@@ -36,6 +36,27 @@ struct StatisticView: View {
     }
 }
 
+struct StatisticShimmerView: View {
+    var body: some View {
+        VStack(alignment: .leading, spacing: 6) {
+
+            RoundedRectangle(cornerRadius: 4)
+                .fill(Color.theme.shimmerBackground)
+                .frame(width: 60, height: 10)
+
+            RoundedRectangle(cornerRadius: 4)
+                .fill(Color.theme.shimmerBackground)
+                .frame(width: 80, height: 16)
+
+            RoundedRectangle(cornerRadius: 4)
+                .fill(Color.theme.shimmerBackground)
+                .frame(width: 50, height: 10)
+        }
+        .shimmer()
+    }
+}
+
+
 
 #Preview {
     StatisticView(stat: DeveloperPreview.instance.stat1)

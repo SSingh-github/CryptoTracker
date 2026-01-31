@@ -24,7 +24,7 @@ struct HomeView: View {
                 columnTitles
                 
                 if !showPortfolio {
-                    if vm.isLoading {
+                    if vm.isCoinDataLoading {
                         allCoinsShimmerList
                     } else {
                         allCoinsList
