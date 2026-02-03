@@ -14,6 +14,7 @@ struct PortfolioView: View {
     @State private var selectedCoin: CoinModel? = nil
     @State private var quantityText: String = ""
     @State private var showCheckmark: Bool = false
+    @FocusState private var isInputActive: Bool
         
     var body: some View {
         NavigationView {
@@ -42,9 +43,11 @@ struct PortfolioView: View {
                     }
 
                 }
+                .sharedBackgroundVisibility(.hidden)
                 ToolbarItem(placement: .navigationBarTrailing) {
                     trailingNavBarButtons
                 }
+                .sharedBackgroundVisibility(.hidden)
             })
             .onChange(of: vm.searchText, { oldValue, newValue in
                 if newValue == "" {
@@ -116,6 +119,15 @@ extension PortfolioView {
                 TextField("Ex: 1.4", text: $quantityText)
                     .multilineTextAlignment(.trailing)
                     .keyboardType(.decimalPad)
+                    .focused($isInputActive)
+                    .toolbar {
+                        ToolbarItemGroup(placement: .keyboard) {
+                            Spacer()
+                            Button("Done") {
+                                isInputActive = false
+                            }
+                        }
+                    }
             }
             Divider()
             HStack {
