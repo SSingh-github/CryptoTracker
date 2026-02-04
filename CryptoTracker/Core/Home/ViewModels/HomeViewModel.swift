@@ -50,6 +50,7 @@ class HomeViewModel: ObservableObject {
             .store(in: &cancellables)
         
         marketDataService.$marketData
+            .combineLatest($portfolioCoins)
             .map (mapMarketData)
             .sink { [weak self] (stats) in
                 self?.statistics = stats
@@ -66,6 +67,16 @@ class HomeViewModel: ObservableObject {
             }
             .store(in: &cancellables)
     }
+    
+    
+    func reloadData() {
+        isCoinDataLoading = true
+        coinDataService.getCoins()
+        isMarketDataLoading = true
+        marketDataService.getMarketData()
+        HapticManager.notification(type: .success)
+    }
+    
     
     
     func updatePortfolio(coin: CoinModel, amount: Double) {
@@ -87,7 +98,7 @@ class HomeViewModel: ObservableObject {
         }
     }
     
-    private func mapMarketData(returnedMarketData: MarketDataModel?) -> [StatisticModel] {
+    private func mapMarketData(returnedMarketData: MarketDataModel?, portfolioCoins: [CoinModel]) -> [StatisticModel] {
         guard let marketData = returnedMarketData else {
             return []
         }
@@ -97,7 +108,25 @@ class HomeViewModel: ObservableObject {
         let marketCap = StatisticModel(title: "Market Cap", value: marketData.marketCap, percentageChange: marketData.marketCapChangePercentage24HUsd)
         let volume = StatisticModel(title: "24h Volume", value: marketData.volume)
         let btcDominance = StatisticModel(title: "BTC Dominance", value: marketData.btcDominance)
-        let portfolio = StatisticModel(title: "Portfolio Value", value: "$0.00", percentageChange: 0)
+        
+        let portfolioValue = portfolioCoins.map({$0.currentHoldingsValue}).reduce(0, +)
+        
+        let previousValue =
+        portfolioCoins
+            .map { (coin) -> Double in
+                let currentValue = coin.currentHoldingsValue
+                let percentChange = coin.priceChangePercentage24H ?? 0 / 100
+                let previousValue = currentValue / (1 + percentChange)
+                return previousValue
+            }
+            .reduce(0, +)
+        
+        let percentageChange = ((portfolioValue - previousValue) / previousValue)
+        
+        let portfolio = StatisticModel(
+            title: "Portfolio Value",
+            value: portfolioValue.asCurrencyWith2Decimals(),
+            percentageChange: percentageChange)
         
         stats.append(contentsOf: [
             marketCap,

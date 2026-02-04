@@ -126,6 +126,11 @@ extension HomeView {
             }
             Text("Price")
                 .frame(width: 120, alignment: .trailing)
+            Button(action: {
+                    vm.reloadData()
+            }, label: {
+                Image(systemName: "goforward")
+            })
         }
         .font(.caption)
         .foregroundStyle(Color.theme.secondaryText)
