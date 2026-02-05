@@ -8,6 +8,21 @@
 import Foundation
 import SwiftUI
 import Combine
+/*
+ 
+ MARK: COMBINE DEPENDENCY GRAPH
+ 
+ $sortOption -----------------------|
+                                    |
+ coinDataService.$allCoins ─────────┐
+                                    ├─> allCoins ──────┐
+ $searchText ── debounce ─ filter ──┘                  │
+                                                       ├─> portfolioCoins --------------------|
+ portfolioDataService.$savedEntities ──────────────────┘                                      |
+                                                                                              | -> statistics
+ marketDataService.$marketData ────────────────-----------------------------------------------
+
+ */
 
 class HomeViewModel: ObservableObject {
     
@@ -35,17 +50,21 @@ class HomeViewModel: ObservableObject {
     func addSubscribers() {
         
         $searchText
+            .combineLatest(coinDataService.$allCoins)
             .debounce(for: .seconds(0.5), scheduler: DispatchQueue.main)
             .map(filterCoins)
             .sink {[weak self] (returnedCoins) in
                 self?.allCoins = returnedCoins
+                self?.isCoinDataLoading = false
             }
             .store(in: &cancellables)
         
-        coinDataService.$allCoins
-            .sink {[weak self] (returnedCoins) in
-                self?.allCoins = returnedCoins
-                self?.isCoinDataLoading = false
+        $allCoins
+            .combineLatest(portfolioDataService.$savedEntities)
+            .map(mapAllCoinsToPortfolioCoins)
+            .sink { [weak self] (returnedCoins) in
+                guard let self = self else { return }
+                self.portfolioCoins = returnedCoins
             }
             .store(in: &cancellables)
         
@@ -58,16 +77,7 @@ class HomeViewModel: ObservableObject {
             }
             .store(in: &cancellables)
        
-        $allCoins
-            .combineLatest(portfolioDataService.$savedEntities)
-            .map(mapAllCoinsToPortfolioCoins)
-            .sink { [weak self] (returnedCoins) in
-                guard let self = self else { return }
-                self.portfolioCoins = returnedCoins
-            }
-            .store(in: &cancellables)
     }
-    
     
     func reloadData() {
         isCoinDataLoading = true
@@ -77,14 +87,11 @@ class HomeViewModel: ObservableObject {
         HapticManager.notification(type: .success)
     }
     
-    
-    
     func updatePortfolio(coin: CoinModel, amount: Double) {
         portfolioDataService.updatePortfolio(coin: coin, amount: amount)
     }
     
-    private func filterCoins(text: String) -> [CoinModel] {
-        let coins = coinDataService.allCoins
+    private func filterCoins(text: String, coins: [CoinModel]) -> [CoinModel] {
         guard !text.isEmpty else {
             return coins
         }
