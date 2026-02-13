@@ -33,6 +33,7 @@ class HomeViewModel: ObservableObject {
     @Published var searchText: String = ""
     @Published var statistics: [StatisticModel] = []
     @Published var sortOption: SortOption = .holdings
+    @Published var showLaunchScreen: Bool = true
     
     private let coinDataService = CoinDataService()
     private let marketDataService = MarketDataService()
@@ -61,6 +62,20 @@ class HomeViewModel: ObservableObject {
             .sink {[weak self] (returnedCoins) in
                 self?.allCoins = returnedCoins
                 self?.isCoinDataLoading = false
+               
+            }
+            .store(in: &cancellables)
+        
+        coinDataService.$allCoins
+            .sink {[weak self] returnedCoins in
+                // ensure that launch is shown once and removed only when coins are downloaded
+                if self?.showLaunchScreen == true && !returnedCoins.isEmpty {
+                    DispatchQueue.main.asyncAfter(deadline: .now() + 1.0) {
+                        withAnimation {
+                            self?.showLaunchScreen = false
+                        }
+                    }
+                }
             }
             .store(in: &cancellables)
         
