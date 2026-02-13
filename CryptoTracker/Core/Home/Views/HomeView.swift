@@ -10,6 +10,9 @@ import SwiftUI
 struct HomeView: View {
     @State private var showPortfolio: Bool = false
     @State private var showPortfolioView: Bool = false
+    @State private var showSettingsView: Bool = false
+    @State private var selectedCoin: CoinModel? = nil
+    @State private var showDetailView: Bool = false
     @EnvironmentObject private var vm : HomeViewModel
     
     var body: some View {
@@ -43,7 +46,16 @@ struct HomeView: View {
                 }
                 Spacer(minLength: 0)
             }
+            .sheet(isPresented: $showSettingsView) {
+                SettingsView()
+            }
         }
+        .background(
+            NavigationLink(
+                destination: DetailLoadingView(coin: $selectedCoin),
+                isActive: $showDetailView,
+                label: { EmptyView() })
+        )
     }
 }
 
@@ -66,6 +78,8 @@ extension HomeView {
                 .onTapGesture {
                     if showPortfolio {
                         showPortfolioView.toggle()
+                    } else {
+                        showSettingsView.toggle()
                     }
                 }
             Spacer()
@@ -91,6 +105,11 @@ extension HomeView {
             ForEach(vm.allCoins) { coin in
                 CoinRowView(coin: coin, showHoldingsColumn: false)
                     .listRowInsets(.init(top: 10, leading: 0, bottom: 10, trailing: 10))
+                    .listRowBackground(Color.theme.background)
+                    .onTapGesture {
+                        segue(coin: coin)
+                    }
+                    
             }
         }
         .listStyle(PlainListStyle())
@@ -112,11 +131,18 @@ extension HomeView {
             ForEach(vm.portfolioCoins) { coin in
                 CoinRowView(coin: coin, showHoldingsColumn: true)
                     .listRowInsets(.init(top: 10, leading: 0, bottom: 10, trailing: 10))
+                    .listRowBackground(Color.theme.background)
+                    .onTapGesture {
+                        segue(coin: coin)
+                    }
             }
         }
         .listStyle(PlainListStyle())
     }
-    
+    private func segue(coin: CoinModel) {
+        selectedCoin = coin
+        showDetailView.toggle()
+    }
     private var columnTitles: some View {
         HStack {
             HStack(spacing: 4) {
